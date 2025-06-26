@@ -84,7 +84,10 @@ func TestPostService_Get(t *testing.T) {
 	AssertError(t, err, nil)
 	
 	// test
-	got, err := service.Store.GetByID(post.ID)
+	_, err = service.GetPostByID(post.ID)
+	if err == store.ErrNotFound {
+		t.Errorf("GetByID operation failed")
+	}
 }
 
 func AssertTest(t testing.TB, got, want string) {

@@ -57,6 +57,14 @@ func (s *PostServiceRepository) CreatePost(title, content string) (*models.Post,
 	return post, nil
 }
 
+func (s *PostServiceRepository) GetPostByID(id string) (*models.Post, error) {
+	post, err := s.Store.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
 func (s *PostServiceRepository) titleExists(title string) bool {
 	posts, err := s.Store.GetAll()
 	if err != nil {
