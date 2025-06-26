@@ -9,58 +9,6 @@ import (
 )
 
 func TestPostService_CreatePost(t *testing.T) {
-	// t.Run("successfully creates post with valid data", func(t *testing.T) {
-	// 	// setup
-	// 	mockStore := store.NewInMemoryStore()
-	// 	service := NewPostService(mockStore)
-
-	// 	// Act
-	// 	post, err := service.CreatePost("My first blog", "Some content for first blog")
-
-	// 	// Assert
-	// 	AssertError(t, err, nil)
-	// 	AssertTest(t, post.Name, "My first blog")
-
-	// 	// Verify it was actually stored
-	// 	storedPost, err := mockStore.GetByID(post.ID)
-	// 	AssertError(t, err, nil)
-	// 	AssertTest(t, storedPost.Name, post.Name)
-	// })
-
-	// t.Run("sanitize title by trimming whitespace", func(t *testing.T) {
-	// 	// Arrange
-	// 	mockStore := store.NewInMemoryStore()
-	// 	service := NewPostService(mockStore)
-
-	// 	// Act - title with extra whitespace
-	// 	post, err := service.CreatePost("  My Blog Post  ", "Some good content")
-	// 	AssertError(t, err, nil)
-	// 	AssertTest(t, post.Name, "My Blog Post")
-	// })
-
-	// t.Run("reject content that is too short", func(t *testing.T) {
-	// 	// arrange
-	// 	mockStore := store.NewInMemoryStore()
-	// 	service := NewPostService(mockStore)
-
-	// 	// Act - very short content
-	// 	_, err := service.CreatePost("Good title", "Hi")
-	// 	AssertError(t, err, ErrContentTooShort)
-	// })
-
-	// t.Run("prevent duplicate titles", func(t *testing.T) {
-	// 	// arrange
-	// 	mockStore := store.NewInMemoryStore()
-	// 	service := NewPostService(mockStore)
-
-	// 	// Act 1 - create first post
-	// 	_, err := service.CreatePost("Unique Title", "First post content here")
-	// 	AssertError(t, err, nil)
-
-	// 	// Act 2 - try to create post with same title
-	// 	_, err = service.CreatePost("Unique Title", "Second post content here")
-	// 	AssertError(t, err, ErrDuplicateTitle)
-	// })
 	tests := []struct {
 		name      string
 		title     string
