@@ -12,6 +12,10 @@ type PostStore interface {
 	// Delete(id string) error
 }
 
+var (
+	ErrNotFound = errors.New("Item not found")
+)
+
 type InMemoryStore struct {
 	posts map[string]*models.Post
 }
@@ -33,6 +37,9 @@ func (s *InMemoryStore) Create(post *models.Post) error {
 }
 
 func (s *InMemoryStore) GetByID(id string) (*models.Post, error) {
+	if _, ok := s.posts[id]; !ok {
+		return nil, ErrNotFound
+	}
 	return s.posts[id], nil
 }
 

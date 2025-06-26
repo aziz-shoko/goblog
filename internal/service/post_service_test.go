@@ -75,6 +75,18 @@ func TestPostService_CreatePost(t *testing.T) {
 
 }
 
+func TestPostService_Get(t *testing.T) {
+	// Setup
+	mockStore := store.NewInMemoryStore()
+	service := NewPostService(mockStore)
+
+	post, err := service.CreatePost("Get Test Title", "Test content for get")
+	AssertError(t, err, nil)
+	
+	// test
+	got, err := service.Store.GetByID(post.ID)
+}
+
 func AssertTest(t testing.TB, got, want string) {
 	t.Helper()
 	if got != want {

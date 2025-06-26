@@ -47,6 +47,28 @@ func TestPostStore_GetByID_Create(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name: "failing retrieve",
+			setup: func() *InMemoryStore {
+				return NewInMemoryStore()
+			},
+			post: func() *models.Post {
+				p, _ := models.NewPost("Test Title", "Test Content")
+				return p
+			}(),
+			// false because we are not expecting error until validate
+			wantErr: false,
+			validate: func(s *InMemoryStore, post *models.Post) error {
+				_, err := s.GetByID("somerandomnonsenseid")
+				if err == nil {
+					return fmt.Errorf("GetByID failed")
+				}
+				if err != ErrNotFound {
+					return fmt.Errorf("Got error %v wanted error %v", err, ErrNotFound)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, sc := range scenarios {
