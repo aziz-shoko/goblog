@@ -10,7 +10,7 @@ import (
 
 var (
 	ErrContentTooShort = errors.New("Content Too Short, must be at least contain 5 chars")
-	ErrDuplicateTitle = errors.New("Title already exists (case insensitive)")
+	ErrDuplicateTitle  = errors.New("Title already exists (case insensitive)")
 )
 
 // Post service handles business operations for blog posts
@@ -63,6 +63,14 @@ func (s *PostServiceRepository) GetPostByID(id string) (*models.Post, error) {
 		return nil, err
 	}
 	return post, nil
+}
+
+func (s *PostServiceRepository) ListAllPosts() ([]*models.Post, error) {
+	posts, err := s.Store.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
 
 func (s *PostServiceRepository) titleExists(title string) bool {

@@ -2,6 +2,7 @@ package service
 
 import (
 	// "strings"
+	"strconv"
 	"testing"
 
 	// "github.com/aziz-shoko/goblog/models"
@@ -76,18 +77,36 @@ func TestPostService_CreatePost(t *testing.T) {
 }
 
 func TestPostService_Get(t *testing.T) {
-	// Setup
-	mockStore := store.NewInMemoryStore()
-	service := NewPostService(mockStore)
+	t.Run("test GetPostByID with valid post existing", func(t *testing.T) {
+		// Setup
+		mockStore := store.NewInMemoryStore()
+		service := NewPostService(mockStore)
 
-	post, err := service.CreatePost("Get Test Title", "Test content for get")
-	AssertError(t, err, nil)
-	
-	// test
-	_, err = service.GetPostByID(post.ID)
-	if err == store.ErrNotFound {
-		t.Errorf("GetByID operation failed")
-	}
+		post, err := service.CreatePost("Get Test Title", "Test content for get")
+		AssertError(t, err, nil)
+
+		// test
+		_, err = service.GetPostByID(post.ID)
+		if err == store.ErrNotFound {
+			t.Errorf("GetByID operation failed")
+		}
+	})
+
+	t.Run("test GetAllPosts", func(t *testing.T) {
+		// setup
+		mockStore := store.NewInMemoryStore()
+		service := NewPostService(mockStore)
+
+		for i := range 5 {
+			_, err := service.CreatePost("title"+strconv.Itoa(i), "content"+strconv.Itoa(i))
+			AssertError(t, err, nil)
+		}
+
+		posts, _ := service.ListAllPosts()
+		if len(posts) != 5 {
+			t.Errorf("Expected 5 posts but got %d posts", len(posts))
+		}
+	})
 }
 
 func AssertTest(t testing.TB, got, want string) {
