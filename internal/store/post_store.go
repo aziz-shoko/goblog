@@ -1,0 +1,48 @@
+package store
+
+import (
+	"github.com/aziz-shoko/goblog/models"
+	"errors"
+)
+
+type PostStore interface {
+	Create(*models.Post) error
+	GetAll() ([]*models.Post, error)
+	GetByID(string) (*models.Post, error)
+	// Delete(id string) error
+}
+
+type InMemoryStore struct {
+	posts map[string]*models.Post
+}
+
+func NewInMemoryStore() *InMemoryStore {
+	return &InMemoryStore{
+		posts: make(map[string]*models.Post),
+	}
+}
+
+func (s *InMemoryStore) Create(post *models.Post) error {
+	if post == nil {
+		return errors.New("post cannot be nil")
+	}
+
+	s.posts[post.ID] = post
+
+	return nil	
+}
+
+func (s *InMemoryStore) GetByID(id string) (*models.Post, error) {
+	return s.posts[id], nil
+}
+
+func (s *InMemoryStore) GetAll() ([]*models.Post, error) {
+	if len(s.posts) == 0 {
+		return nil, errors.New("Emtpy store")
+	}
+	listOfPosts := []*models.Post{}
+	for _, val := range s.posts {
+		listOfPosts = append(listOfPosts, val)
+	}
+	return listOfPosts, nil
+}
