@@ -1,0 +1,60 @@
+package handler
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/aziz-shoko/goblog/internal/service"
+)
+
+type CreatePostRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
+type CreatePostResponse struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"created_at"`
+}
+
+type PostHandler struct {
+	Service *service.PostServiceRepository
+}
+
+func NewPostHandler(service *service.PostServiceRepository) *PostHandler {
+	return &PostHandler{
+		Service: service,
+	}
+}
+
+// CreatePost handles POST /posts requests
+func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	// Parse request
+	var req CreatePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Call service
+	post, err := h.Service.CreatePost(req.Title, req.Content)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Build response
+	response := CreatePostResponse{
+		ID:        post.ID,
+		Title:     post.Name,
+		Content:   post.Content,
+		CreatedAt: post.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}
+
+	// send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+}
