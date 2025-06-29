@@ -3,9 +3,12 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"os"
+	"strings"
 
 	"github.com/aziz-shoko/goblog/internal/service"
 	"github.com/aziz-shoko/goblog/internal/store"
@@ -79,5 +82,41 @@ func setupTest(t *testing.T, body interface{}) (*httptest.ResponseRecorder, *htt
 
 	w := httptest.NewRecorder()
 	return w, req
+}
+
+func TestLoggingMiddleware(t *testing.T) {
+	t.Run("log request details", func(t *testing.T) {
+		// Capture log output
+		var logOutput bytes.Buffer
+		log.SetOutput(&logOutput)
+		defer log.SetOutput(os.Stdout) // Reset after test
+
+		// Create a test handler
+		testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte("test response"))
+		})
+
+		// Wrap with logging middleware 
+		wrappedHandler := LoggingMiddleware(testHandler)
+
+		// Make request
+		req := httptest.NewRequest(http.MethodPost, "/posts", nil)
+		w := httptest.NewRecorder()
+
+		wrappedHandler.ServeHTTP(w, req)
+
+		// Assert log output
+		logStr := logOutput.String()
+		if !strings.Contains(logStr, "POST") {
+			t.Error("Expected log to contain HTTP method")
+		}
+		if !strings.Contains(logStr, "/posts") {
+			t.Error("Expected log to contain URL path")
+		}
+		if !strings.Contains(logStr, "201") {
+			t.Error("Expected log to contain status code")
+		}
+	})
 }
 
