@@ -68,6 +68,7 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	post, err := h.Service.Store.GetByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 
 	// Build response

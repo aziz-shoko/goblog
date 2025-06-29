@@ -99,7 +99,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			w.Write([]byte("test response"))
 		})
 
-		// Wrap with logging middleware 
+		// Wrap with logging middleware
 		wrappedHandler := LoggingMiddleware(testHandler)
 
 		// Make request
@@ -128,50 +128,54 @@ func TestPostHandler_Get(t *testing.T) {
 	service := service.NewPostService(store)
 	handler := NewPostHandler(service)
 
+	var response CreatePostResponse
+
+	// make specific post for this test
+	post, err := service.CreatePost("some test title", "some test content for this")
+	if err != nil {
+		t.Fatalf("Error creating posts")
+	}
+
 	tests := []struct {
 		name       string
 		wantStatus int
-		title      string
-		content    string
-		wantTitle  string
+		wantID     string
 		wantError  bool
 	}{
 		{
 			name:       "Test Valid GetPostByID",
 			wantStatus: http.StatusOK,
-			title:      "Some test for id get",
-			content:    "some content for get by id",
-			wantTitle:  "Some test for id get",
+			wantID:     post.ID,
 			wantError:  false,
+		},
+		{
+			name:       "Test Invalid GetPostByID",
+			wantStatus: http.StatusNotFound,
+			wantID:     "invalidID", // Invalid id to test 404 not found
+			wantError:  true,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			var response CreatePostResponse
-
-			// make specific post for this test
-			post, err := service.CreatePost(tc.title, tc.content)
-			if err != nil {
-				t.Fatalf("Error creating posts")
-			}
-
 			// make request
-			req := httptest.NewRequest(http.MethodGet, "/post/"+post.ID, nil)
+			req := httptest.NewRequest(http.MethodGet, "/post/"+tc.wantID, nil)
 			w := httptest.NewRecorder()
-
 			handler.GetPostByID(w, req)
-			err = json.Unmarshal(w.Body.Bytes(), &response)
-			if err != nil {
-				t.Fatalf("Failed to parse response: %v", err)
+
+			if w.Code != tc.wantStatus {
+				t.Fatalf("expected status code %d but got %d", tc.wantStatus, w.Code)
 			}
 
-			if w.Code != http.StatusOK {
-				t.Errorf("expected %d got %d", http.StatusOK, w.Code)
-			}
-
-			if !tc.wantError && response.Title != post.Name {
-				t.Errorf("expected %v got ID %v", post, response)
+			if !tc.wantError {
+				err = json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					t.Fatalf("Failed to parse response: %v", err)
+				}
+	
+				if !tc.wantError && response.ID != post.ID {
+					t.Errorf("expected %v got ID %v", post, response)
+				}
 			}
 		})
 	}
