@@ -9,13 +9,13 @@ import (
 )
 
 type CreatePostRequest struct {
-	Title   string `json:"title"`
+	Name    string `json:"name"`
 	Content string `json:"content"`
 }
 
 type CreatePostResponse struct {
 	ID        string `json:"id"`
-	Title     string `json:"title"`
+	Name      string `json:"name"`
 	Content   string `json:"content"`
 	CreatedAt string `json:"created_at"`
 }
@@ -40,7 +40,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call service
-	post, err := h.Service.CreatePost(req.Title, req.Content)
+	post, err := h.Service.CreatePost(req.Name, req.Content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -49,7 +49,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	// Build response
 	response := CreatePostResponse{
 		ID:        post.ID,
-		Title:     post.Name,
+		Name:      post.Name,
 		Content:   post.Content,
 		CreatedAt: post.CreatedAt.Format("2006-01-02T15:04:05Z"),
 	}
@@ -74,11 +74,37 @@ func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
 	// Build response
 	response := CreatePostResponse{
 		ID:        post.ID,
-		Title:     post.Name,
+		Name:      post.Name,
 		Content:   post.Content,
 		CreatedAt: post.CreatedAt.Format("2006-01-02T15:04:05Z"),
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetPostsAll returns all the posts
+func (h *PostHandler) GetPostsAll(w http.ResponseWriter, r *http.Request) {
+	// call service
+	posts, err := h.Service.Store.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Build Response
+	response := []CreatePostResponse{}
+	for _, post := range posts {
+		response = append(response, CreatePostResponse{
+			ID:        post.ID,
+			Name:      post.Name,
+			Content:   post.Content,
+			CreatedAt: post.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }

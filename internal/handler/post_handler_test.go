@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	// "strconv"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/aziz-shoko/goblog/internal/service"
 	"github.com/aziz-shoko/goblog/internal/store"
-	// "github.com/aziz-shoko/goblog/models"
+	"github.com/aziz-shoko/goblog/models"
 )
 
 func TestPostHandler_CreatePost(t *testing.T) {
@@ -31,9 +31,9 @@ func TestPostHandler_CreatePost(t *testing.T) {
 	}{
 		{
 			name:       "success",
-			body:       CreatePostRequest{"My Title", "My content"},
+			body:       CreatePostRequest{"My Name", "My content"},
 			wantStatus: http.StatusCreated,
-			wantTitle:  "My Title",
+			wantTitle:  "My Name",
 		},
 		{
 			name:       "bad json data",
@@ -43,7 +43,7 @@ func TestPostHandler_CreatePost(t *testing.T) {
 		},
 		{
 			name:       "short content",
-			body:       CreatePostRequest{"Test Title", "hi"},
+			body:       CreatePostRequest{"Test Name", "hi"},
 			wantStatus: http.StatusBadRequest,
 			wantError:  true,
 		},
@@ -63,8 +63,8 @@ func TestPostHandler_CreatePost(t *testing.T) {
 				if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
 					t.Fatalf("unmarshal: %v", err)
 				}
-				if resp.Title != tc.wantTitle {
-					t.Errorf("expected title %q, got %q", tc.wantTitle, resp.Title)
+				if resp.Name != tc.wantTitle {
+					t.Errorf("expected title %q, got %q", tc.wantTitle, resp.Name)
 				}
 			}
 		})
@@ -172,7 +172,7 @@ func TestPostHandler_Get(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to parse response: %v", err)
 				}
-	
+
 				if !tc.wantError && response.ID != post.ID {
 					t.Errorf("expected %v got ID %v", post, response)
 				}
@@ -181,19 +181,49 @@ func TestPostHandler_Get(t *testing.T) {
 	}
 }
 
-// func TestPostHandler_GetAll(t *testing.T) {
-// 	// setup
-// 	store := store.NewInMemoryStore()
-// 	service := service.NewPostService(store)
-// 	handler := NewPostHandler(service)
+func TestPostHandler_GetAll(t *testing.T) {
+	// setup
+	store := store.NewInMemoryStore()
+	service := service.NewPostService(store)
+	handler := NewPostHandler(service)
 
-// 	// Create some posts
-// 	posts := []*models.Post{}
-// 	for i := range 5 {
-// 		post, err := service.CreatePost("Title"+strconv.Itoa(i), "Some Content"+strconv.Itoa(i))
-// 		if err != nil {
-// 			t.Fatalf("Error creating posts")
-// 		}
-// 		posts = append(posts, post)
-// 	}
-// }
+	// Create some posts
+	posts := []*models.Post{}
+	for i := range 5 {
+		post, err := service.CreatePost(strconv.Itoa(i)+"Name", "Some Content"+strconv.Itoa(i))
+		if err != nil {
+			t.Fatalf("Error creating posts")
+		}
+		posts = append(posts, post)
+	}
+
+	t.Run("Get All Posts", func(t *testing.T) {
+		// Request
+		req := httptest.NewRequest(http.MethodGet, "/posts/", nil)
+		w := httptest.NewRecorder()
+		handler.GetPostsAll(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("Expected status code %d, but got %d", http.StatusOK, w.Code)
+		}
+
+		// Check content type
+		expectedContentType := "application/json"
+		if contentType := w.Header().Get("Content-Type"); contentType != expectedContentType {
+			t.Errorf("Expected Content-Type %s, got %s", expectedContentType, contentType)
+		}
+
+		var responseData []*models.Post
+		err := json.Unmarshal(w.Body.Bytes(), &responseData)
+		if err != nil {
+			t.Fatalf("Error unmarshaling response: %v", err)
+		}
+
+		// Check that we got the expected number of posts
+		// for simplicity sake, we will just check length instead of actual content
+		// may god forgive me for this
+		if len(responseData) != len(posts) {
+			t.Fatalf("Expected %d posts, got %d", len(posts), len(responseData))
+		}
+	})
+}
