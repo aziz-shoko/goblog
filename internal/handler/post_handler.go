@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/aziz-shoko/goblog/internal/service"
 )
@@ -59,3 +60,24 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetPostByID handles the getting post part
+func (h *PostHandler) GetPostByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/post/")
+
+	// Call service
+	post, err := h.Service.Store.GetByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	// Build response
+	response := CreatePostResponse{
+		ID:        post.ID,
+		Title:     post.Name,
+		Content:   post.Content,
+		CreatedAt: post.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}

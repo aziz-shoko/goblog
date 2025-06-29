@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 	"os"
+	// "strconv"
 	"strings"
+	"testing"
 
 	"github.com/aziz-shoko/goblog/internal/service"
 	"github.com/aziz-shoko/goblog/internal/store"
+	// "github.com/aziz-shoko/goblog/models"
 )
 
 func TestPostHandler_CreatePost(t *testing.T) {
@@ -120,3 +122,74 @@ func TestLoggingMiddleware(t *testing.T) {
 	})
 }
 
+func TestPostHandler_Get(t *testing.T) {
+	// setup
+	store := store.NewInMemoryStore()
+	service := service.NewPostService(store)
+	handler := NewPostHandler(service)
+
+	tests := []struct {
+		name       string
+		wantStatus int
+		title      string
+		content    string
+		wantTitle  string
+		wantError  bool
+	}{
+		{
+			name:       "Test Valid GetPostByID",
+			wantStatus: http.StatusOK,
+			title:      "Some test for id get",
+			content:    "some content for get by id",
+			wantTitle:  "Some test for id get",
+			wantError:  false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var response CreatePostResponse
+
+			// make specific post for this test
+			post, err := service.CreatePost(tc.title, tc.content)
+			if err != nil {
+				t.Fatalf("Error creating posts")
+			}
+
+			// make request
+			req := httptest.NewRequest(http.MethodGet, "/post/"+post.ID, nil)
+			w := httptest.NewRecorder()
+
+			handler.GetPostByID(w, req)
+			err = json.Unmarshal(w.Body.Bytes(), &response)
+			if err != nil {
+				t.Fatalf("Failed to parse response: %v", err)
+			}
+
+			if w.Code != http.StatusOK {
+				t.Errorf("expected %d got %d", http.StatusOK, w.Code)
+			}
+
+			if !tc.wantError && response.Title != post.Name {
+				t.Errorf("expected %v got ID %v", post, response)
+			}
+		})
+	}
+}
+
+// func TestPostHandler_GetAll(t *testing.T) {
+// 	// setup
+// 	store := store.NewInMemoryStore()
+// 	service := service.NewPostService(store)
+// 	handler := NewPostHandler(service)
+
+// 	// Create some posts
+// 	posts := []*models.Post{}
+// 	for i := range 5 {
+// 		post, err := service.CreatePost("Title"+strconv.Itoa(i), "Some Content"+strconv.Itoa(i))
+// 		if err != nil {
+// 			t.Fatalf("Error creating posts")
+// 		}
+// 		posts = append(posts, post)
+// 	}
+// }
