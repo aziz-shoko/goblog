@@ -10,6 +10,7 @@ type PostStore interface {
 	GetAll() ([]*models.Post, error)
 	GetByID(string) (*models.Post, error)
 	// Delete(id string) error
+	DeleteAll() error
 }
 
 var (
@@ -52,4 +53,9 @@ func (s *InMemoryStore) GetAll() ([]*models.Post, error) {
 		listOfPosts = append(listOfPosts, val)
 	}
 	return listOfPosts, nil
+}
+
+func (s *InMemoryStore) DeleteAll() error {
+	s.posts = make(map[string]*models.Post)	
+	return nil
 }

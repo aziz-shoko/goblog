@@ -92,7 +92,7 @@ func TestPostStore_GetByID_Create(t *testing.T) {
 
 // TODO: in the future, make this also a table driven to test all related edge cases to GetAll
 // i will do this when i implement an actual database instead of just an in memory one
-func TestPostStore_GetAll(t *testing.T) {
+func TestPostStore_Get_Delete(t *testing.T) {
 	// database setup
 	database := NewInMemoryStore()
 
@@ -104,8 +104,23 @@ func TestPostStore_GetAll(t *testing.T) {
 		database.Create(post)
 	}
 
-	listOfPosts, _ := database.GetAll()
-	if len(listOfPosts) != 5 {
-		t.Errorf("Expected 5 posts, got %d", len(listOfPosts))
-	}
+	t.Run("Valid Get all test", func(t *testing.T) {
+		listOfPosts, _ := database.GetAll()
+		if len(listOfPosts) != 5 {
+			t.Errorf("Expected 5 posts, got %d", len(listOfPosts))
+		}
+	})
+
+	t.Run("Delete all posts", func(t *testing.T) {
+		err := database.DeleteAll()
+		if err != nil {
+			t.Fatalf("Expected to delete all posts but failed: %v", err)
+		}
+
+		if _, err := database.GetAll(); err == nil {
+			t.Error("Failed to delete all posts in database")
+		}
+
+	})
 }
+
