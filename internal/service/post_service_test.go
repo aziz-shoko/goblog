@@ -126,3 +126,21 @@ func AssertError(t testing.TB, got, want error) {
 		t.Errorf("Got error %v want error %v", got, want)
 	}
 }
+
+func TestPostService_DeleteAll(t *testing.T) {
+	// setup
+	mockStore := store.NewInMemoryStore()
+	service := NewPostService(mockStore)
+
+	for i := range 5 {
+		_, err := service.CreatePost("title"+strconv.Itoa(i), "content"+strconv.Itoa(i))
+		AssertError(t, err, nil)
+	}
+
+	service.DeleteAll()
+
+	_, err := service.ListAllPosts()
+	if err == nil {
+		t.Errorf("Expected error for empty posts but got nil")
+	}
+}

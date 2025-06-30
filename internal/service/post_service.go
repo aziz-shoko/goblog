@@ -87,3 +87,9 @@ func (s *PostServiceRepository) titleExists(title string) bool {
 
 	return false
 }
+
+// wrapper delete servic
+func (s *PostServiceRepository) DeleteAll() error {
+	s.Store.DeleteAll()
+	return nil
+}
