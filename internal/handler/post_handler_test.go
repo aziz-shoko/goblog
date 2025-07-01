@@ -226,4 +226,22 @@ func TestPostHandler_GetAll(t *testing.T) {
 			t.Fatalf("Expected %d posts, got %d", len(posts), len(responseData))
 		}
 	})
+
+	t.Run("Delete All Posts", func(t *testing.T) {
+		// Request 
+		req := httptest.NewRequest(http.MethodDelete, "/posts", nil)
+		w := httptest.NewRecorder()
+		handler.DeleteAllPosts(w, req)
+
+		if w.Code != http.StatusNoContent {
+			t.Fatalf("Expected status code %d, but got %d", http.StatusNoContent, w.Code)
+		}
+
+		// test to see if content was actually deleted by called store method directly
+		_, err := store.GetAll()
+		if err == nil {
+			t.Errorf("expected error for emtpy content but got nil")
+		}
+
+	})
 }

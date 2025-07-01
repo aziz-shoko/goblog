@@ -108,3 +108,14 @@ func (h *PostHandler) GetPostsAll(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }
+
+// DeleteAllPosts handler
+func (h *PostHandler) DeleteAllPosts(w http.ResponseWriter, r *http.Request) {
+	// call service 
+	err := h.Service.Store.DeleteAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
