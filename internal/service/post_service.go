@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/aziz-shoko/goblog/internal/store"
 	"github.com/aziz-shoko/goblog/models"
 )
 
@@ -12,16 +11,23 @@ var (
 	ErrContentTooShort = errors.New("Content Too Short, must be at least contain 5 chars")
 	ErrDuplicateTitle  = errors.New("Title already exists (case insensitive)")
 )
+type PostStore interface {
+	Create(*models.Post) error
+	GetAll() ([]*models.Post, error)
+	GetByID(string) (*models.Post, error)
+	// Delete(id string) error
+	DeleteAll() error
+}
 
 // Post service handles business operations for blog posts
 // Design pattern: Dependency Injection - depends on store interface
 type PostServiceRepository struct {
-	Store store.PostStore
+	Store PostStore
 }
 
 // NewPostService creates a new post service
 // Design pattern: Dependency Injection - inject the store dependency
-func NewPostService(store store.PostStore) *PostServiceRepository {
+func NewPostService(store PostStore) *PostServiceRepository {
 	return &PostServiceRepository{
 		Store: store,
 	}

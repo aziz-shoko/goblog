@@ -5,14 +5,6 @@ import (
 	"errors"
 )
 
-type PostStore interface {
-	Create(*models.Post) error
-	GetAll() ([]*models.Post, error)
-	GetByID(string) (*models.Post, error)
-	// Delete(id string) error
-	DeleteAll() error
-}
-
 var (
 	ErrNotFound = errors.New("Item not found")
 )
